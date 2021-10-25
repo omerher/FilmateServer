@@ -1,0 +1,1 @@
+Scaffold-DbContext "Server = localhost\SQLEXPRESS; Database=FilmateDB; Trusted_Connection=true" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -Context FilmateContext –DataAnnotations -force
