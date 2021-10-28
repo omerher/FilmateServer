@@ -41,7 +41,7 @@ namespace FilmateBL.Models
         }
 
         // returns salt of given email
-        public string? GetSaltByEmail(string email)
+        public string GetSaltByEmail(string email)
         {
             Account a = this.Accounts.FirstOrDefault(a => a.Email == email);
             if (a != null)
@@ -50,7 +50,7 @@ namespace FilmateBL.Models
         }
 
         // returns hash of given email
-        public string? GetHashByEmail(string email)
+        public string GetHashByEmail(string email)
         {
             Account a = this.Accounts.FirstOrDefault(a => a.Email == email);
             if (a != null)

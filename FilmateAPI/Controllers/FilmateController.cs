@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using FilmateBL.Models;
 using FilmateAPI.DataTransferObjects;
 using System.Net.Http;
+using FilmateAPI.Services;
 
 namespace FilmateAPI.Controllers
 {
@@ -22,23 +23,35 @@ namespace FilmateAPI.Controllers
         }
         #endregion
 
-
-        [Route("register")]
-        [HttpGet]
-        public Account Register([FromQuery] string email, [FromQuery] string username, [FromQuery] string password, [FromQuery] int age, [FromQuery] string salt)
+        
+        [Route("signup")]
+        [HttpPost]
+        public Account SignUp([FromBody] Account sentAccount)
         {
             Account current = HttpContext.Session.GetObject<Account>("account");
             // Check if user isn't logged in!
             if (current == null)
             {
-                Account acc = null;
+                HashSalt hashSalt = HashSalt.GenerateSaltedHash(sentAccount.Pass);
+                string hash = hashSalt.Hash;
+                string salt = hashSalt.Salt;
+
+                Account acc = new Account()
+                {
+                    Email = sentAccount.Email,
+                    Pass = hash,
+                    Salt = salt,
+                    Username = sentAccount.Username,
+                    AccountName = sentAccount.AccountName,
+                    Age = sentAccount.Age
+                };
+
                 try
                 {
-                    bool exists = context.UsernameExists(username) || context.EmailExists(email);
+                    bool exists = context.UsernameExists(acc.Username) || context.EmailExists(acc.Email);
                     if (!exists)
                     {
-                        string name = username;
-                        acc = context.Register(name, email, username, password, age, salt);
+                        Account a = context.Register(acc);
                         return acc;
                     }
                     Response.StatusCode = (int)System.Net.HttpStatusCode.Conflict;
@@ -65,111 +78,45 @@ namespace FilmateAPI.Controllers
             }
         }
 
-
-        //[Route("register")]
-        //[HttpPost]
-        //public Account Register([FromBody] Account newAccount)
-        //{
-        //    if (newAccount == null)
-        //    {
-        //        Response.StatusCode = (int)System.Net.HttpStatusCode.BadRequest;
-        //        return null;
-        //    }
-
-        //    Account current = HttpContext.Session.GetObject<Account>("account");
-        //    // Check if user isn't logged in!
-        //    if (current == null)
-        //    {
-        //        Account acc = null;
-        //        try
-        //        {
-        //            bool exists = context.UsernameExists(newAccount.Username) || context.EmailExists(newAccount.Email);
-        //            if (!exists)
-        //            {
-        //                acc = context.Register(newAccount);
-        //                return new Account(acc);
-        //            }
-        //            Response.StatusCode = (int)System.Net.HttpStatusCode.Conflict;
-        //        }
-        //        catch
-        //        {
-        //            Response.StatusCode = (int)System.Net.HttpStatusCode.Conflict;
-        //        }
-
-        //        if (acc != null)
-        //        {
-        //            HttpContext.Session.SetObject("player", acc);
-        //            Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
-
-        //            return acc;
-        //        }
-        //        else
-        //            return null;
-        //    }
-        //    else
-        //    {
-        //        Response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
-        //        return null;
-        //    }
-        //}
-
-        [Route("get-salt")]
-        [HttpGet]
-        public string GetSalt([FromQuery] string email)
-        {
-            try
-            {
-                string? salt = context.GetSaltByEmail(email);
-                if (salt != null)
-                    return System.Web.HttpUtility.UrlEncode(salt);
-                else
-                    return "Error";
-            }
-            catch
-            {
-                return "Error";
-            }
-        }
-
-        [Route("get-hash")]
-        [HttpGet]
-        public string GetHash([FromQuery] string email)
-        {
-            try
-            {
-                string? hash = context.GetHashByEmail(email);
-                if (hash != null)
-                    return System.Web.HttpUtility.UrlEncode(hash);
-                else
-                    return "Error";
-            }
-            catch
-            {
-                return "Error";
-            }
-        }
-
         [Route("login")]
-        [HttpGet]
-        public Account Login([FromQuery] string email, [FromQuery] string password)
+        [HttpPost]
+        public Account Login([FromBody] (string, string) credentials) // credentials is a tuple where item1 is the email and item2 is the password
         {
             Account account = null;
-            try
-            {
-                account = context.Login(email, password);
-            }
-            catch
-            {
-                Response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
-            } 
+            string email = credentials.Item1;
+            string password = credentials.Item2;
 
-            // Check username and password
-            if (account != null)
-            {
-                HttpContext.Session.SetObject("player", account);
-                Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
+            string hash = context.GetHashByEmail(email);
+            string salt = context.GetSaltByEmail(email);
 
-                return account;
+            bool validPassword = false;
+            if (hash != null && salt != null)
+                validPassword = HashSalt.VerifyPassword(password, hash, salt);
+
+            if (validPassword)
+            {
+                try
+                {
+                    account = context.Login(email, hash);
+                }
+                catch
+                {
+                    Response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
+                }
+
+                // Check username and password
+                if (account != null)
+                {
+                    HttpContext.Session.SetObject("player", account);
+                    Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
+
+                    return account;
+                }
+                else
+                {
+                    Response.StatusCode = (int)System.Net.HttpStatusCode.Unauthorized;
+                    return null;
+                }
             }
             else
             {
@@ -178,9 +125,9 @@ namespace FilmateAPI.Controllers
             }
         }
 
-        [Route("login")]
+        [Route("login-token")]
         [HttpPost]
-        public AccountDTO Login([FromQuery] string token)
+        public AccountDTO LoginToken([FromQuery] string token)
         {
             Account account = null;
             try

@@ -4,8 +4,7 @@ using System.Text;
 using System.Security.Cryptography;
 using System.Linq;
 
-
-namespace FilmateBL.Models
+namespace FilmateAPI.Services
 {
     public static class GeneralProcessing
     {

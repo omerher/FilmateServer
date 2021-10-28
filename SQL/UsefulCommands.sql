@@ -5,5 +5,5 @@
 --------------------------------------------------------------------
 
 -- Delete user by email
-DELETE FROM Account WHERE Account.Email = 'hershkovitz888@gmail.com';
+DELETE FROM Account WHERE Account.Email = 'hershkovitz88@gmail.com';
 
