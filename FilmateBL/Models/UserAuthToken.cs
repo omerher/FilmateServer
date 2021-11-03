@@ -16,6 +16,8 @@ namespace FilmateBL.Models
         [Key]
         [StringLength(255)]
         public string AuthToken { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime CreationDate { get; set; }
 
         [ForeignKey(nameof(AccountId))]
         [InverseProperty("UserAuthTokens")]

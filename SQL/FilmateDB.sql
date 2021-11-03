@@ -107,7 +107,8 @@ ALTER TABLE
 -- User Auth Token Table
 CREATE TABLE UserAuthToken(
     AccountID INT NOT NULL,
-    AuthToken NVARCHAR(255) NOT NULL
+    AuthToken NVARCHAR(255) NOT NULL,
+	CreationDate DATETIME NOT NULL DEFAULT GETDATE()
 );
 ALTER TABLE
     UserAuthToken ADD CONSTRAINT PK_UserAuthToken_AuthToken PRIMARY KEY(AuthToken);

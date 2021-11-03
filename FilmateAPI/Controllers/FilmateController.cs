@@ -8,6 +8,8 @@ using FilmateBL.Models;
 using FilmateAPI.DataTransferObjects;
 using System.Net.Http;
 using FilmateAPI.Services;
+using Newtonsoft.Json;
+using System.Text;
 
 namespace FilmateAPI.Controllers
 {
@@ -52,30 +54,31 @@ namespace FilmateAPI.Controllers
                     if (!exists)
                     {
                         Account a = context.Register(acc);
-                        return acc;
+                        if (a != null)
+                        {
+                            HttpContext.Session.SetObject("account", a);
+
+                            Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
+                            return a;
+                        }
+                        else
+                        {
+                            Response.StatusCode = (int)System.Net.HttpStatusCode.Conflict;
+                            return null;
+                        }
+                        
                     }
                     Response.StatusCode = (int)System.Net.HttpStatusCode.Conflict;
                 }
                 catch
                 {
-                    Response.StatusCode = (int)System.Net.HttpStatusCode.Conflict;
+                    Response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
                 }
-
-                if (acc != null)
-                {
-                    HttpContext.Session.SetObject("player", acc);
-                    Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
-
-                    return acc;
-                }
-                else
-                    return null;
             }
             else
-            {
                 Response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
-                return null;
-            }
+
+            return null;
         }
 
         [Route("login")]
@@ -107,7 +110,7 @@ namespace FilmateAPI.Controllers
                 // Check username and password
                 if (account != null)
                 {
-                    HttpContext.Session.SetObject("player", account);
+                    HttpContext.Session.SetObject("account", account);
                     Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
 
                     return account;
@@ -126,13 +129,13 @@ namespace FilmateAPI.Controllers
         }
 
         [Route("login-token")]
-        [HttpPost]
-        public AccountDTO LoginToken([FromQuery] string token)
+        [HttpGet]
+        public string LoginToken([FromQuery] string token)
         {
             Account account = null;
             try
             {
-                account = context.Login(token);
+                account = context.LoginToken(token);
             }
             catch
             {
@@ -142,12 +145,18 @@ namespace FilmateAPI.Controllers
             // Check username and password
             if (account != null)
             {
-                AccountDTO aDTO = new AccountDTO(account);
-
-                HttpContext.Session.SetObject("player", aDTO);
+                HttpContext.Session.SetObject("account", account);
                 Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
 
-                return aDTO;
+                JsonSerializerSettings options = new JsonSerializerSettings
+                {
+                    PreserveReferencesHandling = PreserveReferencesHandling.All
+                };
+
+                string json = JsonConvert.SerializeObject(account, options);
+                StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                return json;
             }
             else
             {
@@ -162,7 +171,7 @@ namespace FilmateAPI.Controllers
         {
             try
             {
-                AccountDTO current = HttpContext.Session.GetObject<AccountDTO>("account");
+                Account current = HttpContext.Session.GetObject<Account>("account");
                 if (current != null)
                 {
                     bool isUnique = false;
@@ -170,7 +179,7 @@ namespace FilmateAPI.Controllers
                     while (!isUnique)
                     {
                         token = GeneralProcessing.GenerateAlphanumerical(16);
-                        isUnique = context.TokenExists(token);
+                        isUnique = !context.TokenExists(token);
                     }
 
                     bool worked = context.AddToken(token, current.AccountId);
@@ -230,6 +239,32 @@ namespace FilmateAPI.Controllers
             {
                 Response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
                 return null;
+            }
+        }
+
+        [Route("add-liked-movie")]
+        [HttpGet]
+        public bool AddLikedMovie([FromQuery] int movieID)
+        {
+            Account current = HttpContext.Session.GetObject<Account>("account");
+            if (current != null)
+            {
+                try
+                {
+                    bool added = context.AddLikedMovie(current.AccountId, movieID);
+                    Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
+                    return added;
+                }
+                catch
+                {
+                    Response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
+                    return false;
+                }
+            }
+            else
+            {
+                Response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
+                return false;
             }
         }
     }

@@ -11,7 +11,7 @@ namespace FilmateBL.Models
     [Table("Account")]
     [Index(nameof(Email), Name = "I_Account_Email", IsUnique = true)]
     [Index(nameof(Username), Name = "I_Account_Username", IsUnique = true)]
-    [Index(nameof(Salt), Name = "UQ__Account__A152BCCE67209FA8", IsUnique = true)]
+    [Index(nameof(Salt), Name = "UQ__Account__A152BCCEAB249B5C", IsUnique = true)]
     public partial class Account
     {
         public Account()
@@ -48,6 +48,8 @@ namespace FilmateBL.Models
         [Required]
         [StringLength(255)]
         public string Salt { get; set; }
+        [Column(TypeName = "date")]
+        public DateTime SignUpDate { get; set; }
 
         [InverseProperty(nameof(AccountVotesHistory.Account))]
         public virtual ICollection<AccountVotesHistory> AccountVotesHistories { get; set; }

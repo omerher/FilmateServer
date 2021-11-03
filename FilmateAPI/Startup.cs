@@ -54,8 +54,7 @@ namespace FilmateAPI
             string connectionString = this.Configuration.GetConnectionString("FilmateDB");
 
             services.AddDbContext<FilmateContext>(options => options
-                                                                .UseSqlServer(connectionString));
-            //.UseLazyLoadingProxies());
+                                                                .UseSqlServer(connectionString).UseLazyLoadingProxies());
             #endregion
         }
 

@@ -8,6 +8,8 @@ namespace FilmateBL.Models
 {
     partial class FilmateContext
     {
+        public Account GetAccountByID(int id) => this.Accounts.FirstOrDefault(a => a.AccountId == id);
+        
         // receives an object of type Account and adds it to the DB. Returns the Account object.
         public Account Register(Account a)
         {
@@ -62,11 +64,11 @@ namespace FilmateBL.Models
         public Account Login(string email, string password) => this.Accounts.FirstOrDefault(a => a.Email == email && a.Pass == password);
 
         // log in using token
-        public Account Login(string token)
+        public Account LoginToken(string token)
         {
             UserAuthToken u = this.UserAuthTokens.FirstOrDefault(a => a.AuthToken == token);
             if (u != null)
-                return u.Account;
+                return GetAccountByID(u.AccountId);
             return null;
         }
 
@@ -94,6 +96,25 @@ namespace FilmateBL.Models
                 return true;
             }
             catch
+            {
+                return false;
+            }
+        }
+
+        public bool AddLikedMovie(int accountID, int movieId)
+        {
+            Account account = this.Accounts.FirstOrDefault(a => a.AccountId == accountID);
+            if (account != null)
+            {
+                account.LikedMovies.Add(new LikedMovie()
+                {
+                    AccountId = accountID,
+                    MovieId = movieId
+                });
+                this.SaveChanges();
+                return true;
+            }
+            else
             {
                 return false;
             }

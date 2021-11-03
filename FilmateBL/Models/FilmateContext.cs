@@ -43,7 +43,9 @@ namespace FilmateBL.Models
 
             modelBuilder.Entity<Account>(entity =>
             {
-                entity.Property(e => e.ProfilePicture).HasDefaultValueSql("('/imgs/default_pfp.jpg')");
+                entity.Property(e => e.ProfilePicture).HasDefaultValueSql("('default_pfp.jpg')");
+
+                entity.Property(e => e.SignUpDate).HasDefaultValueSql("(getdate())");
             });
 
             modelBuilder.Entity<AccountVotesHistory>(entity =>
@@ -155,6 +157,8 @@ namespace FilmateBL.Models
             {
                 entity.HasKey(e => e.AuthToken)
                     .HasName("PK_UserAuthToken_AuthToken");
+
+                entity.Property(e => e.CreationDate).HasDefaultValueSql("(getdate())");
 
                 entity.HasOne(d => d.Account)
                     .WithMany(p => p.UserAuthTokens)
