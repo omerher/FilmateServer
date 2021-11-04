@@ -267,5 +267,31 @@ namespace FilmateAPI.Controllers
                 return false;
             }
         }
+
+        [Route("remove-liked-movie")]
+        [HttpGet]
+        public bool RemoveLikedMovie([FromQuery] int movieID)
+        {
+            Account current = HttpContext.Session.GetObject<Account>("account");
+            if (current != null)
+            {
+                try
+                {
+                    bool added = context.RemoveLikedMovie(current.AccountId, movieID);
+                    Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
+                    return added;
+                }
+                catch
+                {
+                    Response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
+                    return false;
+                }
+            }
+            else
+            {
+                Response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
+                return false;
+            }
+        }
     }
 }

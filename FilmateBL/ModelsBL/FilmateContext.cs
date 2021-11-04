@@ -119,5 +119,27 @@ namespace FilmateBL.Models
                 return false;
             }
         }
+
+        public bool RemoveLikedMovie(int accountID, int movieId)
+        {
+            Account account = this.Accounts.FirstOrDefault(a => a.AccountId == accountID);
+            if (account != null)
+            {
+                LikedMovie likedMovie = account.LikedMovies.FirstOrDefault(m => m.MovieId == movieId);
+
+                if (likedMovie != null)
+                {
+                    account.LikedMovies.Remove(likedMovie);
+                    this.SaveChanges();
+                    return true;
+                }
+
+                return false;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }
