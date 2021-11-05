@@ -83,7 +83,7 @@ namespace FilmateAPI.Controllers
 
         [Route("login")]
         [HttpPost]
-        public Account Login([FromBody] (string, string) credentials) // credentials is a tuple where item1 is the email and item2 is the password
+        public string Login([FromBody] (string, string) credentials) // credentials is a tuple where item1 is the email and item2 is the password
         {
             Account account = null;
             string email = credentials.Item1;
@@ -113,7 +113,15 @@ namespace FilmateAPI.Controllers
                     HttpContext.Session.SetObject("account", account);
                     Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
 
-                    return account;
+                    JsonSerializerSettings options = new JsonSerializerSettings
+                    {
+                        PreserveReferencesHandling = PreserveReferencesHandling.All
+                    };
+
+                    string json = JsonConvert.SerializeObject(account, options);
+                    StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    return json;
                 }
                 else
                 {
