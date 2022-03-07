@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using FilmateAPI.Hubs;
 
 namespace FilmateAPI
 {
@@ -38,6 +39,7 @@ namespace FilmateAPI
 
             services.AddControllers().AddNewtonsoftJson(o => o.SerializerSettings
                             .ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Serialize);
+            services.AddSignalR();
 
             //The following two commands set the Session state to work!
             services.AddDistributedMemoryCache();
@@ -73,6 +75,7 @@ namespace FilmateAPI
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<ChatHub>("chathub");
             });
         }
     }

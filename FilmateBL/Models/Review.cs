@@ -16,9 +16,10 @@ namespace FilmateBL.Models
         public int ReviewId { get; set; }
         [Column("AccountID")]
         public int AccountId { get; set; }
+        [Column("MovieID")]
+        public int MovieId { get; set; }
         public int Rating { get; set; }
         [Required]
-        [StringLength(255)]
         public string Content { get; set; }
         [Required]
         [StringLength(255)]

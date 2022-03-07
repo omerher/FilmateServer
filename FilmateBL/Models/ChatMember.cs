@@ -16,6 +16,7 @@ namespace FilmateBL.Models
         [Key]
         [Column("ChatID")]
         public int ChatId { get; set; }
+        public bool IsAdmin { get; set; }
 
         [ForeignKey(nameof(AccountId))]
         [InverseProperty("ChatMembers")]

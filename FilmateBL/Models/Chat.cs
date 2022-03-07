@@ -23,12 +23,19 @@ namespace FilmateBL.Models
         [Required]
         [StringLength(255)]
         public string ChatName { get; set; }
-        public int ChatDescription { get; set; }
+        [Required]
+        [StringLength(255)]
+        public string ChatDescription { get; set; }
         [Column(TypeName = "datetime")]
         public DateTime CreationDate { get; set; }
+        [Column("SuggestedMovieID")]
+        public int? SuggestedMovieId { get; set; }
         [Required]
         [StringLength(255)]
         public string Icon { get; set; }
+        [Required]
+        [StringLength(255)]
+        public string InviteCode { get; set; }
 
         [InverseProperty(nameof(ChatMember.Chat))]
         public virtual ICollection<ChatMember> ChatMembers { get; set; }

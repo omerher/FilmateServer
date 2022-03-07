@@ -10,6 +10,7 @@ using System.Net.Http;
 using FilmateAPI.Services;
 using Newtonsoft.Json;
 using System.Text;
+using System.IO;
 
 namespace FilmateAPI.Controllers
 {
@@ -300,6 +301,344 @@ namespace FilmateAPI.Controllers
                 Response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
                 return false;
             }
+        }
+
+        [Route("upload-image")]
+        [HttpPost]
+        public async Task<IActionResult> UploadImage(IFormFile file)
+        {
+            Account account = HttpContext.Session.GetObject<Account>("account");
+
+            if (account != null)
+            {
+                if (file == null)
+                {
+                    return BadRequest();
+                }
+
+                try
+                {
+                    var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/imgs", file.FileName);
+                    using (var stream = new FileStream(path, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+
+                    context.UpdateAccountPfp(file.FileName, account.AccountId);
+
+                    return Ok(new { length = file.Length, name = file.FileName });
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                    return BadRequest();
+                }
+            }
+            return Forbid();
+        }
+
+        [Route("update-profile")]
+        [HttpGet]
+        public IActionResult UpdateProfile([FromQuery] string email, [FromQuery] string username, [FromQuery] string name, [FromQuery] int age)
+        {
+            Account loggedInAccount = HttpContext.Session.GetObject<Account>("account");
+
+            if (loggedInAccount != null)
+            {
+                Account account = context.Accounts.FirstOrDefault(a => a.AccountId == loggedInAccount.AccountId);
+                if (account == null) return Forbid();
+
+                if (email != null) account.Email = email;
+                if (username != null) account.Username = username;
+                if (name != null) account.AccountName = name;
+                if (age != -1) account.Age = age;
+                context.SaveChanges();
+
+                return Ok();
+            }
+
+            return Forbid();
+        }
+
+        [Route("add-suggestion")]
+        [HttpGet]
+        public IActionResult AddSuggestion([FromQuery] int ogMovieID, [FromQuery] int suggMovieID)
+        {
+            Account loggedInAccount = HttpContext.Session.GetObject<Account>("account");
+
+            if (loggedInAccount != null)
+            {
+                if (context.AddSuggestion(loggedInAccount.AccountId, ogMovieID, suggMovieID))
+                    return Ok();
+
+                return BadRequest();
+            }
+
+            return Forbid();
+        }
+
+        [Route("get-suggestions")]
+        [HttpGet]
+        public string GetSuggestions([FromQuery] int movieID)
+        {
+            try
+            {
+                List<Suggestion> suggestions = context.GetSuggestions(movieID);
+
+                JsonSerializerSettings options = new JsonSerializerSettings
+                {
+                    PreserveReferencesHandling = PreserveReferencesHandling.All
+                };
+
+                string json = JsonConvert.SerializeObject(suggestions, options);
+
+                Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
+                return json;
+            }
+            catch
+            {
+                Response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
+                return null;
+            }
+        }
+
+        [Route("add-vote")]
+        [HttpGet]
+        public IActionResult AddVote([FromQuery] int suggestionID, [FromQuery]  bool voteType)
+        {
+            Account loggedInAccount = HttpContext.Session.GetObject<Account>("account");
+
+            if (loggedInAccount != null)
+            {
+                if (context.AddVote(loggedInAccount.AccountId, suggestionID, voteType))
+                    return Ok();
+
+                return BadRequest();
+            }
+
+            return Forbid();
+        }
+
+        [Route("remove-vote")]
+        [HttpGet]
+        public IActionResult RemoveVote([FromQuery] int suggestionID)
+        {
+            Account loggedInAccount = HttpContext.Session.GetObject<Account>("account");
+
+            if (loggedInAccount != null)
+            {
+                if (context.RemoveVote(loggedInAccount.AccountId, suggestionID))
+                    return Ok();
+
+                return BadRequest();
+            }
+
+            return Forbid();
+        }
+
+        [Route("add-review")]
+        [HttpPost]
+        public Review AddReview([FromBody] Review review)
+        {
+            Account loggedInAccount = HttpContext.Session.GetObject<Account>("account");
+
+            if (loggedInAccount != null)
+            {
+                Review serverReview = context.AddReview(review);
+                if (serverReview != null)
+                {
+                    Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
+                    return serverReview;
+                }
+
+                Response.StatusCode = (int)System.Net.HttpStatusCode.Conflict;
+                return null;
+            }
+
+            Response.StatusCode = (int)System.Net.HttpStatusCode.Conflict;
+            return null;
+        }
+
+        [Route("delete-review")]
+        [HttpGet]
+        public IActionResult RemoveReview([FromQuery] int reviewID)
+        {
+            Account loggedInAccount = HttpContext.Session.GetObject<Account>("account");
+
+            if (loggedInAccount != null)
+            {
+                if (context.DeleteReview(loggedInAccount.AccountId, reviewID))
+                    return Ok();
+
+                return BadRequest();
+            }
+
+            return Forbid();
+        }
+        
+        [Route("get-reviews")]
+        [HttpGet]
+        public string GetReviews([FromQuery] int movieID)
+        {
+            try
+            {
+                List<Review> reviews = context.GetReviews(movieID);
+
+                JsonSerializerSettings options = new JsonSerializerSettings
+                {
+                    PreserveReferencesHandling = PreserveReferencesHandling.All
+                };
+
+                string json = JsonConvert.SerializeObject(reviews, options);
+
+                Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
+                return json;
+            }
+            catch
+            {
+                Response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
+                return null;
+            }
+        }
+
+        [Route("create-group")]
+        [HttpPost]
+        public string CreateGroup([FromBody] Chat chat)
+        {
+            Account loggedInAccount = HttpContext.Session.GetObject<Account>("account");
+
+            if (loggedInAccount != null)
+            {
+                Chat returnedChat = context.CreateGroup(chat, loggedInAccount.AccountId);
+                if (returnedChat != null)
+                {
+                    JsonSerializerSettings options = new JsonSerializerSettings
+                    {
+                        PreserveReferencesHandling = PreserveReferencesHandling.All
+                    };
+
+                    Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
+                    string json = JsonConvert.SerializeObject(returnedChat, options);
+                    return json;
+                }
+
+                Response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
+                return null;
+            }
+
+            Response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
+            return null;
+        }
+
+        [Route("get-groups")]
+        [HttpGet]
+        public string GetGroups()
+        {
+            Account loggedInAccount = HttpContext.Session.GetObject<Account>("account");
+
+            if (loggedInAccount != null)
+            {
+                try
+                {
+                    List<Chat> chats = context.GetGroups(loggedInAccount.AccountId);
+
+                    JsonSerializerSettings options = new JsonSerializerSettings
+                    {
+                        PreserveReferencesHandling = PreserveReferencesHandling.All
+                    };
+
+                    string json = JsonConvert.SerializeObject(chats, options);
+
+                    Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
+                    return json;
+                }
+                catch
+                {
+                    Response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
+                    return null;
+                }
+            }
+
+            Response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
+            return null;
+        }
+
+        [Route("get-group")]
+        [HttpGet]
+        public string GetGroup([FromQuery] int chatId)
+        {
+            Account loggedInAccount = HttpContext.Session.GetObject<Account>("account");
+
+            if (loggedInAccount != null)
+            {
+                try
+                {
+                    Chat chat = context.GetGroup(chatId);
+
+                    if (chat != null && loggedInAccount.ChatMembers.Any(c => c.ChatId == chat.ChatId))
+                    {
+                        JsonSerializerSettings options = new JsonSerializerSettings
+                        {
+                            PreserveReferencesHandling = PreserveReferencesHandling.All
+                        };
+
+                        string json = JsonConvert.SerializeObject(chat, options);
+
+                        Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
+                        return json;
+                    }
+
+                    Response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
+                    return null;
+                }
+                catch
+                {
+                    Response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
+                    return null;
+                }
+            }
+
+            Response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
+            return null;
+        }
+
+        [Route("get-chat-liked")]
+        [HttpGet]
+        public string GetChatLikedMovies([FromQuery] int chatId)
+        {
+            Account loggedInAccount = HttpContext.Session.GetObject<Account>("account");
+
+            if (loggedInAccount != null && loggedInAccount.ChatMembers.Any(c => c.ChatId == chatId))
+            {
+                try
+                {
+                    List<int> likedMovies = context.GetChatLikedMovies(chatId);
+
+                    if (likedMovies != null)
+                    {
+                        JsonSerializerSettings options = new JsonSerializerSettings
+                        {
+                            PreserveReferencesHandling = PreserveReferencesHandling.All
+                        };
+
+                        string json = JsonConvert.SerializeObject(likedMovies, options);
+
+                        Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
+                        return json;
+                    }
+
+                    Response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
+                    return null;
+                }
+                catch
+                {
+                    Response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
+                    return null;
+                }
+            }
+
+            Response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
+            return null;
         }
     }
 }

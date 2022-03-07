@@ -21,7 +21,6 @@ namespace FilmateBL.Models
         public virtual DbSet<AccountVotesHistory> AccountVotesHistories { get; set; }
         public virtual DbSet<Chat> Chats { get; set; }
         public virtual DbSet<ChatMember> ChatMembers { get; set; }
-        public virtual DbSet<ChatSuggestion> ChatSuggestions { get; set; }
         public virtual DbSet<LikedMovie> LikedMovies { get; set; }
         public virtual DbSet<Msg> Msgs { get; set; }
         public virtual DbSet<Review> Reviews { get; set; }
@@ -71,6 +70,8 @@ namespace FilmateBL.Models
             modelBuilder.Entity<Chat>(entity =>
             {
                 entity.Property(e => e.CreationDate).HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.Icon).HasDefaultValueSql("('default_chat_pfp.jpg')");
             });
 
             modelBuilder.Entity<ChatMember>(entity =>
@@ -89,17 +90,6 @@ namespace FilmateBL.Models
                     .HasForeignKey(d => d.ChatId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_ChatMembers_ChatID");
-            });
-
-            modelBuilder.Entity<ChatSuggestion>(entity =>
-            {
-                entity.Property(e => e.IsActive).HasDefaultValueSql("((1))");
-
-                entity.HasOne(d => d.Chat)
-                    .WithMany()
-                    .HasForeignKey(d => d.ChatId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_ChatSuggestions_ChatID");
             });
 
             modelBuilder.Entity<LikedMovie>(entity =>

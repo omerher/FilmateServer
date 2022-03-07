@@ -2,6 +2,44 @@ CREATE DATABASE FilmateDB;
 GO
 USE FilmateDB;
 GO
+-- Chat Table
+--CREATE TABLE Chat(
+--    ChatID INT NOT NULL IDENTITY(10000, 1),
+--    ChatName NVARCHAR(255) NOT NULL,
+--    ChatDescription NVARCHAR(255) NOT NULL,
+--    CreationDate DATETIME NOT NULL DEFAULT GETDATE(),
+--	SuggestedMovieID INT,
+--    Icon NVARCHAR(255) NOT NULL DEFAULT 'default_chat_pfp.jpg',
+--	InviteCode NVARCHAR(255) NOT NULL,
+--);
+--ALTER TABLE
+--    Chat ADD CONSTRAINT PK_Chat_ChatID PRIMARY KEY(ChatID);
+---- Chat Members Table
+--CREATE TABLE ChatMembers(
+--    AccountID INT NOT NULL,
+--    ChatID INT NOT NULL,
+--	IsAdmin BIT NOT NULL DEFAULT 0
+--);
+--ALTER TABLE
+--    ChatMembers ADD CONSTRAINT PK_ChatMembers_AccountID_ChatID PRIMARY KEY(AccountID, ChatID);
+---- Message Table
+--CREATE TABLE Msg(
+--    MsgID INT NOT NULL IDENTITY(10000, 1),
+--    AccountID INT NOT NULL,
+--    ChatID INT NOT NULL,
+--    Content NVARCHAR(255) NOT NULL,
+--    SentDate DATETIME NOT NULL DEFAULT GETDATE()
+--);
+--ALTER TABLE
+--    Msg ADD CONSTRAINT PK_Msg_MsgID PRIMARY KEY(MsgID);
+--ALTER TABLE
+--    ChatMembers ADD CONSTRAINT FK_ChatMembers_AccountID FOREIGN KEY(AccountID) REFERENCES Account(AccountID);
+--ALTER TABLE
+--    ChatMembers ADD CONSTRAINT FK_ChatMembers_ChatID FOREIGN KEY(ChatID) REFERENCES Chat(ChatID);
+--ALTER TABLE
+--    Msg ADD CONSTRAINT FK_Msg_ChatID FOREIGN KEY(ChatID) REFERENCES Chat(ChatID);
+--ALTER TABLE
+--    Msg ADD CONSTRAINT FK_Msg_AccountID FOREIGN KEY(AccountID) REFERENCES Account(AccountID);
 
 
 -- Suggestion Table
@@ -52,8 +90,9 @@ CREATE UNIQUE INDEX I_Account_Username ON
 CREATE TABLE Review(
     ReviewID INT NOT NULL IDENTITY(10000, 1),
     AccountID INT NOT NULL,
+	MovieID INT NOT NULL,
     Rating INT NOT NULL,
-    Content NVARCHAR(255) NOT NULL,
+    Content NVARCHAR(MAX) NOT NULL,
     Title NVARCHAR(255) NOT NULL,
     PostDate DATETIME NOT NULL DEFAULT GETDATE(),
     Upvotes INT NOT NULL DEFAULT 0,
@@ -67,9 +106,11 @@ ALTER TABLE
 CREATE TABLE Chat(
     ChatID INT NOT NULL IDENTITY(10000, 1),
     ChatName NVARCHAR(255) NOT NULL,
-    ChatDescription INT NOT NULL,
+    ChatDescription NVARCHAR(255) NOT NULL,
     CreationDate DATETIME NOT NULL DEFAULT GETDATE(),
-    Icon NVARCHAR(255) NOT NULL -- DEFAULT '/imgs/default_chat_icon.png'
+	SuggestedMovieID INT,
+    Icon NVARCHAR(255) NOT NULL DEFAULT 'default_chat_pfp.png',
+	InviteCode NVARCHAR(255) NOT NULL,
 );
 ALTER TABLE
     Chat ADD CONSTRAINT PK_Chat_ChatID PRIMARY KEY(ChatID);
@@ -78,18 +119,11 @@ ALTER TABLE
 -- Chat Members Table
 CREATE TABLE ChatMembers(
     AccountID INT NOT NULL,
-    ChatID INT NOT NULL
+    ChatID INT NOT NULL,
+	IsAdmin BIT NOT NULL DEFAULT 0
 );
 ALTER TABLE
     ChatMembers ADD CONSTRAINT PK_ChatMembers_AccountID_ChatID PRIMARY KEY(AccountID, ChatID);
-
-
--- Chat Suggestions Table
-CREATE TABLE ChatSuggestions(
-    ChatID INT NOT NULL,
-    MovieID INT NOT NULL,
-	IsActive BIT NOT NULL DEFAULT 1
-);
 
 
 -- Message Table
@@ -136,11 +170,9 @@ ALTER TABLE
 ALTER TABLE
     ChatMembers ADD CONSTRAINT FK_ChatMembers_AccountID FOREIGN KEY(AccountID) REFERENCES Account(AccountID);
 ALTER TABLE
-    ChatMembers ADD CONSTRAINT FK_ChatMembers_ChatID FOREIGN KEY(ChatID) REFERENCES Chat(ChatID);
-ALTER TABLE
     Review ADD CONSTRAINT FK_Review_AccountID FOREIGN KEY(AccountID) REFERENCES Account(AccountID);
 ALTER TABLE
-    ChatSuggestions ADD CONSTRAINT FK_ChatSuggestions_ChatID FOREIGN KEY(ChatID) REFERENCES Chat(ChatID);
+    ChatMembers ADD CONSTRAINT FK_ChatMembers_ChatID FOREIGN KEY(ChatID) REFERENCES Chat(ChatID);
 ALTER TABLE
     Msg ADD CONSTRAINT FK_Msg_ChatID FOREIGN KEY(ChatID) REFERENCES Chat(ChatID);
 ALTER TABLE
