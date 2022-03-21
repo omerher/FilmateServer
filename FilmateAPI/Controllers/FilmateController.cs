@@ -82,6 +82,23 @@ namespace FilmateAPI.Controllers
             return null;
         }
 
+        [Route("logout")]
+        [HttpGet]
+        public IActionResult LogOut([FromQuery] string authToken)
+        {
+            Account account = HttpContext.Session.GetObject<Account>("account");
+            if (account != null)
+            {
+                HttpContext.Session.Clear();
+                context.DeleteAuthToken(authToken);
+                return Ok();
+            }
+            else
+            {
+                return Forbid();
+            }
+        }
+
         [Route("login")]
         [HttpPost]
         public string Login([FromBody] (string, string) credentials) // credentials is a tuple where item1 is the email and item2 is the password
@@ -151,7 +168,6 @@ namespace FilmateAPI.Controllers
                 Response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
             }
 
-            // Check username and password
             if (account != null)
             {
                 HttpContext.Session.SetObject("account", account);
@@ -305,7 +321,7 @@ namespace FilmateAPI.Controllers
 
         [Route("upload-image")]
         [HttpPost]
-        public async Task<IActionResult> UploadImage(IFormFile file)
+        public async Task<IActionResult> UploadImage(IFormFile file, [FromQuery] int chatId = 0)
         {
             Account account = HttpContext.Session.GetObject<Account>("account");
 
@@ -324,7 +340,10 @@ namespace FilmateAPI.Controllers
                         await file.CopyToAsync(stream);
                     }
 
-                    context.UpdateAccountPfp(file.FileName, account.AccountId);
+                    if (file.FileName.StartsWith("a"))
+                        context.UpdateAccountPfp(file.FileName, account.AccountId);
+                    else if (file.FileName.StartsWith("g"))
+                        context.UpdateGroupPfp(file.FileName, chatId);
 
                     return Ok(new { length = file.Length, name = file.FileName });
                 }
@@ -575,7 +594,7 @@ namespace FilmateAPI.Controllers
                 {
                     Chat chat = context.GetGroup(chatId);
 
-                    if (chat != null && loggedInAccount.ChatMembers.Any(c => c.ChatId == chat.ChatId))
+                    if (chat != null)
                     {
                         JsonSerializerSettings options = new JsonSerializerSettings
                         {
@@ -608,7 +627,7 @@ namespace FilmateAPI.Controllers
         {
             Account loggedInAccount = HttpContext.Session.GetObject<Account>("account");
 
-            if (loggedInAccount != null && loggedInAccount.ChatMembers.Any(c => c.ChatId == chatId))
+            if (loggedInAccount != null)
             {
                 try
                 {

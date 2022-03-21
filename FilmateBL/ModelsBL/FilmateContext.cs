@@ -60,6 +60,13 @@ namespace FilmateBL.Models
             return null;
         }
 
+        public void DeleteAuthToken(string authToken)
+        {
+            UserAuthToken userAuthToken = this.UserAuthTokens.FirstOrDefault(a => a.AuthToken == authToken);
+            if (userAuthToken != null)
+                this.UserAuthTokens.Remove(userAuthToken);
+        }
+
         // returns the accounts if correct credentials, else returns null
         public Account Login(string email, string password) => this.Accounts.FirstOrDefault(a => a.Email == email && a.Pass == password);
 
@@ -67,7 +74,7 @@ namespace FilmateBL.Models
         public Account LoginToken(string token)
         {
             UserAuthToken u = this.UserAuthTokens.FirstOrDefault(a => a.AuthToken == token);
-            if (u != null)
+            if (u != null && u.CreationDate.AddMonths(1).CompareTo(DateTime.Now) > 0) // check that the auth token is less than 1 month old
                 return GetAccountByID(u.AccountId);
             return null;
         }
@@ -148,6 +155,19 @@ namespace FilmateBL.Models
             if (account != null)
             {
                 account.ProfilePicture = path;
+                this.SaveChanges();
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool UpdateGroupPfp(string path, int id)
+        {
+            Chat group = this.Chats.FirstOrDefault(c => c.ChatId == id);
+            if (group != null)
+            {
+                group.Icon = path;
                 this.SaveChanges();
                 return true;
             }
@@ -369,6 +389,20 @@ namespace FilmateBL.Models
                 }
 
                 return likedMovies;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public Msg AddMsg(Msg m)
+        {
+            try
+            {
+                this.Msgs.Add(m);
+                this.SaveChanges();
+                return m;
             }
             catch
             {
