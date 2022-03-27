@@ -409,5 +409,31 @@ namespace FilmateBL.Models
                 return null;
             }
         }
+
+        public Chat JoinInviteCode(string inviteCode, int accountId)
+        {
+            try
+            {
+                Chat chat = this.Chats.FirstOrDefault(c => c.InviteCode == inviteCode);
+
+                if (chat != null)
+                {
+                    this.ChatMembers.Add(new ChatMember()
+                    {
+                        AccountId = accountId,
+                        ChatId = chat.ChatId,
+                    });
+                    this.SaveChanges();
+
+                    return chat;
+                }
+
+                return null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
     }
 }

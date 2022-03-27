@@ -659,5 +659,44 @@ namespace FilmateAPI.Controllers
             Response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
             return null;
         }
+
+        [Route("join-invite-code")]
+        [HttpGet]
+        public string JoinInviteCode([FromQuery] string inviteCode)
+        {
+            Account loggedInAccount = HttpContext.Session.GetObject<Account>("account");
+
+            if (loggedInAccount != null)
+            {
+                try
+                {
+                    Chat group = context.JoinInviteCode(inviteCode, loggedInAccount.AccountId);
+
+                    if (group != null)
+                    {
+                        JsonSerializerSettings options = new JsonSerializerSettings
+                        {
+                            PreserveReferencesHandling = PreserveReferencesHandling.All
+                        };
+
+                        string json = JsonConvert.SerializeObject(group, options);
+
+                        Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
+                        return json;
+                    }
+
+                    Response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
+                    return null;
+                }
+                catch
+                {
+                    Response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
+                    return null;
+                }
+            }
+
+            Response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
+            return null;
+        }
     }
 }
