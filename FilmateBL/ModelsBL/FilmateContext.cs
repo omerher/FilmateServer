@@ -416,7 +416,7 @@ namespace FilmateBL.Models
             {
                 Chat chat = this.Chats.FirstOrDefault(c => c.InviteCode == inviteCode);
 
-                if (chat != null)
+                if (chat != null && !chat.ChatMembers.Any(cm => cm.AccountId == accountId))
                 {
                     this.ChatMembers.Add(new ChatMember()
                     {
@@ -435,5 +435,28 @@ namespace FilmateBL.Models
                 return null;
             }
         }
+
+        public ServerStatsDTO GetAdminStats()
+        {
+            try
+            {
+                DateTime now = DateTime.Now;
+                ServerStatsDTO stats = new ServerStatsDTO()
+                {
+                    NumAccounts = this.Accounts.Count(),
+                    TodaysMessages = this.Msgs.Where(m => m.SentDate.Year == now.Year && m.SentDate.Month == now.Month && m.SentDate.Day == now.Day).ToList().Count(),
+                    TotalMessages = this.Msgs.Count(),
+                    NumGroups = this.Chats.Count(),
+                    NumSuggestions = this.Suggestions.Count()
+                };
+
+                return stats;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
     }
 }

@@ -698,5 +698,83 @@ namespace FilmateAPI.Controllers
             Response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
             return null;
         }
+
+        [Route("get-account")]
+        [HttpGet]
+        public string GetAccount([FromQuery] int id)
+        {
+            Account loggedInAccount = HttpContext.Session.GetObject<Account>("account");
+
+            if (loggedInAccount != null)
+            {
+                try
+                {
+                    Account a = context.GetAccountByID(id);
+
+                    if (a != null)
+                    {
+                        JsonSerializerSettings options = new JsonSerializerSettings
+                        {
+                            PreserveReferencesHandling = PreserveReferencesHandling.All
+                        };
+
+                        string json = JsonConvert.SerializeObject(a, options);
+
+                        Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
+                        return json;
+                    }
+
+                    Response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
+                    return null;
+                }
+                catch
+                {
+                    Response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
+                    return null;
+                }
+            }
+
+            Response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
+            return null;
+        }
+
+        [Route("get-admin-stats")]
+        [HttpGet]
+        public string GetAdminStats()
+        {
+            Account loggedInAccount = HttpContext.Session.GetObject<Account>("account");
+
+            if (loggedInAccount != null && loggedInAccount.IsAdmin)
+            {
+                try
+                {
+                    ServerStatsDTO s = context.GetAdminStats();
+
+                    if (s != null)
+                    {
+                        JsonSerializerSettings options = new JsonSerializerSettings
+                        {
+                            PreserveReferencesHandling = PreserveReferencesHandling.All
+                        };
+
+                        string json = JsonConvert.SerializeObject(s, options);
+
+                        Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
+                        return json;
+                    }
+
+                    Response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
+                    return null;
+                }
+                catch
+                {
+                    Response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
+                    return null;
+                }
+            }
+
+            Response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
+            return null;
+        }
     }
 }

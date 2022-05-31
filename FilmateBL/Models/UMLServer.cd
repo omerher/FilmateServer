@@ -1,0 +1,114 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="NameAndType">
+  <Class Name="FilmateBL.Models.Account">
+    <Position X="7.75" Y="4.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AARAAEAAACQEAAAAA2AAAIAACAAAAAAEBIQAAAAAgAA=</HashCode>
+      <FileName>Models\Account.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="AccountVotesHistories" />
+      <Property Name="ChatMembers" />
+      <Property Name="LikedMovies" />
+      <Property Name="Suggestions" />
+      <Property Name="UserAuthTokens" />
+      <Property Name="Reviews" />
+      <Property Name="Msgs" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="FilmateBL.Models.AccountVotesHistory">
+    <Position X="4.25" Y="2" Width="2" />
+    <TypeIdentifier>
+      <HashCode>ACAAAAAAAAAAAAAAAgAAAAAAAAAgAAAAAAAAAIAAkEA=</HashCode>
+      <FileName>Models\AccountVotesHistory.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Account" />
+      <Property Name="Suggestion" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="FilmateBL.Models.Chat">
+    <Position X="10.25" Y="0.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>QAAAAAAAACIEAAAAAAQAAAAAAAAAIAAAAAAAAAEAgAQ=</HashCode>
+      <FileName>Models\Chat.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="ChatMembers" />
+      <Property Name="Msgs" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="FilmateBL.Models.ChatMember">
+    <Position X="5.5" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAgAAAAAACAAAAAgAAAAAAAAAAEQ=</HashCode>
+      <FileName>Models\ChatMember.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Account" />
+      <Property Name="Chat" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="FilmateBL.Models.FilmateContext" Collapsed="true">
+    <Position X="10.75" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>GARYEGAAAUAUAABBACAEgMCAEAQFAACFCAAQABhGoAQ=</HashCode>
+      <FileName>Models\FilmateContext.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FilmateBL.Models.LikedMovie">
+    <Position X="4.5" Y="8.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAgAAAAAAAQAAAAAAAAAAAAAAAEA=</HashCode>
+      <FileName>Models\LikedMovie.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Account" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="FilmateBL.Models.Msg">
+    <Position X="7.5" Y="1" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAACAAAAgAgAAAAAgAAAAAAAAAAAAgAAAAAAAAAAEQ=</HashCode>
+      <FileName>Models\Msg.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Account" />
+      <Property Name="Chat" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="FilmateBL.Models.Review">
+    <Position X="11.5" Y="4.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAgAAAFAAAgAAAACAAQEAAAEAEAAAAAAAAEA=</HashCode>
+      <FileName>Models\Review.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Account" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="FilmateBL.Models.Suggestion">
+    <Position X="1.5" Y="3" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAABABAAAiAAAACAAAEAAAACAAAAAAAAEEA=</HashCode>
+      <FileName>Models\Suggestion.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Account" />
+    </ShowAsAssociation>
+    <ShowAsCollectionAssociation>
+      <Property Name="AccountVotesHistories" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="FilmateBL.Models.UserAuthToken">
+    <Position X="7.25" Y="9" Width="2" />
+    <TypeIdentifier>
+      <HashCode>QAAAAAAQAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAEA=</HashCode>
+      <FileName>Models\UserAuthToken.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Account" />
+    </ShowAsAssociation>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
